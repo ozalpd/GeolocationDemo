@@ -1,0 +1,159 @@
+﻿@model GeolocationDnm.Models.LocationVM
+
+@{
+    ViewBag.Title = "Create";
+}
+
+<h2>Create</h2>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <h4>Location</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.Title, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Title, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.StreetName, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.StreetName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.StreetName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Notes, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Notes, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Notes, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        @Html.HiddenFor(m => m.Latitude)
+        @Html.HiddenFor(m => m.Longitude)
+        @Html.HiddenFor(m => m.Accuracy)
+        @Html.HiddenFor(m => m.TimeStamp)
+
+        @Html.HiddenFor(m => m.ExtraData)
+
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Kaydet" class="btn btn-info" />
+                @Html.ActionLink("Vazgeç", "Index", null, new { @class = "btn btn-default" })
+            </div>
+        </div>
+    </div>
+}
+<div id="messageToServer"></div>
+<div id="map-canvas" class="col-md-12" style="height:300px"></div>
+
+<div>
+    <a id="gMap" target="_blank" href="" title="Haritada Göster">Tam Sayfa Göster</a>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="https://maps.googleapis.com/maps/api/js"></script>
+    <script>
+        $(document).ready(function () {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            }
+            else {
+                $("#ExtraData").val("Geolocation is not supported by this browser.");
+            }
+        });
+
+        function showPosition(position) {
+            var coordinates = position.coords;
+            var latlondata = "latitude:" + coordinates.latitude + ", longitude:" + coordinates.longitude + ", accuracy:" + coordinates.accuracy +
+                ", speed:" + coordinates.speed + ", heading:" + coordinates.heading +
+                ", timestamp:" + position.timestamp;
+
+            var latlon = "Enlem: " + coordinates.latitude + ", " +
+                "Boylam: " + coordinates.longitude + ", " +
+                "Kesinlik: " + coordinates.accuracy + "<br/>" +
+                "Rakım: " + coordinates.altitude + "<br/>" +
+                "Hız: " + coordinates.speed + ", " +
+                "Yön: " + coordinates.heading + "<br/>" + "Zaman: " + castUnixTime(position.timestamp);
+
+            $("#messageToServer").html(latlon);
+            $("#ExtraData").val(latlondata);
+
+            $("#Latitude").val(coordinates.latitude);
+            $("#Longitude").val(coordinates.longitude);
+            $("#Accuracy").val(coordinates.accuracy);
+            $("#TimeStamp").val(position.timestamp);
+
+            $("#Title").val("Konum " + castUnixTime(position.timestamp));
+            $("#Title").select();
+
+            /* link yap
+            var googleMap = $('#gMap');
+            googleMap.attr("href", "http://maps.google.com/maps?q=" + coordinates.latitude + "," + coordinates.longitude);
+            initMap();
+            */
+
+            /* dynamically load google api script
+            var script = document.createElement("script");
+            script.src = "http://maps.googleapis.com/maps/api/js?callback=initMap";
+            document.body.appendChild(script);
+            */
+            initMap();
+        }
+
+        function initMap() {
+            var latlng = new google.maps.LatLng($("#Latitude").val(), $("#Longitude").val());
+            var mapOptions = {
+                center: latlng,
+                zoom: 16,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            }
+            var mapCanvas = document.getElementById('map-canvas');
+            var map = new google.maps.Map(mapCanvas, mapOptions);
+            var marker = new google.maps.Marker({
+                position: latlng,
+                map: map,
+                title: 'Burası'
+            });
+            /*
+            var image = '_include/img/marker.png';
+            var marker = new google.maps.Marker({
+                position: latlng,
+                map: map,
+                title: $map_title,
+                icon: image
+            });
+          */
+        }
+
+        function showError(error) {
+            if (error.code == 1) {
+                $("#ExtraData").val("User denied the request for Geolocation.");
+            }
+            else if (error.code == 2) {
+                $("#ExtraData").val("Location information is unavailable.");
+            }
+            else if (error.code == 3) {
+                $("#ExtraData").val("The request to get user location timed out.");
+            }
+            else {
+                $("#ExtraData").val("An unknown error occurred.");
+            }
+        }
+        function castUnixTime(unixTime) {
+            var time = new Date(unixTime);
+            return time.toLocaleDateString() + " " + time.toLocaleTimeString();
+        }
+    </script>
+}

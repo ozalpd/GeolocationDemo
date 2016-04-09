@@ -1,0 +1,58 @@
+﻿@model IEnumerable<GeolocationDnm.Models.Location>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>Başlık</th>
+        <th>Pozisyon</th>
+        <th>Sokak - Mevkii</th>
+        <th>Notlar</th>
+        <th>Ek Veri</th>
+        <th>Zaman</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @item.Title
+            </td>
+            <td>
+                @item.Geolocation.ToString()
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StreetName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Notes)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ExtraData)
+            </td>
+            <td>
+                @item.Time
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+                @Html.ActionLink("Details", "Details", new { id = item.Id }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+            </td>
+        </tr>
+    }
+</table>
+@section Scripts {
+    <script>
+        function castUnixTime(unixTime) {
+            var time = new Date(unixTime);
+            return time.toLocaleDateString() + " " + time.toLocaleTimeString();
+        }
+    </script>
+}
