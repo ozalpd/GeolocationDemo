@@ -1,6 +1,3 @@
-USE [GeoDnmDB]
-GO
-
 /****** Object:  Table [dbo].[Locations]    Script Date: 8.5.2015 20:21:02 ******/
 SET ANSI_NULLS ON
 GO
